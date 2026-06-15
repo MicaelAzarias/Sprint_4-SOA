@@ -1,0 +1,565 @@
+{
+  "info": {
+    "name": "HábitoPlus - Sprint 4",
+    "_postman_id": "habitoplus-sprint4-collection",
+    "description": "Coleção completa da API HábitoPlus - Sprint 4 (Segurança JWT + Swagger).\n\nFLUXO DE USO:\n1. Execute 'Login' para obter o token JWT\n2. Copie o token retornado\n3. O token já é salvo automaticamente na variável {{token}} via script\n4. Use os demais endpoints normalmente\n\nBase URL: http://localhost:8080",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Autenticação",
+      "item": [
+        {
+          "name": "Login - USER (COL-001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token salvo automaticamente!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana.silva@empresa.com\",\n  \"senha\": \"senha123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Autentica como colaborador com perfil USER.\n\nO token JWT é salvo automaticamente na variável {{token}} via script.\n\nCredenciais disponíveis (inseridas pela migration V3):\n- ana.silva@empresa.com / senha123 → ROLE_USER\n- carlos.lima@empresa.com / senha123 → ROLE_USER\n- mariana.souza@empresa.com / senha123 → ROLE_ADMIN"
+          },
+          "response": [
+            {
+              "name": "200 - Login bem-sucedido",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbmEuc2lsdmFAZW1wcmVzYS5jb20iLCJpYXQiOjE3MzI3OTIwMDAsImV4cCI6MTczMjg3ODQwMH0.exemplo\",\n  \"tipo\": \"Bearer\",\n  \"colaboradorId\": \"COL-001\",\n  \"email\": \"ana.silva@empresa.com\",\n  \"role\": \"ROLE_USER\"\n}"
+            },
+            {
+              "name": "401 - Credenciais inválidas",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 401,\n  \"erro\": \"Não autorizado\",\n  \"mensagem\": \"Credenciais inválidas.\",\n  \"timestamp\": \"2025-11-28T10:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login - ADMIN (COL-003)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token ADMIN salvo automaticamente!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mariana.souza@empresa.com\",\n  \"senha\": \"senha123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Autentica como ADMIN (mariana.souza).\nNecessário para endpoints que exigem ROLE_ADMIN (ex: DELETE).\n\nO token é salvo automaticamente em {{token}}."
+          },
+          "response": [
+            {
+              "name": "200 - Login ADMIN",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiJ9...\",\n  \"tipo\": \"Bearer\",\n  \"colaboradorId\": \"COL-003\",\n  \"email\": \"mariana.souza@empresa.com\",\n  \"role\": \"ROLE_ADMIN\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login - ❌ Credenciais erradas",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana.silva@empresa.com\",\n  \"senha\": \"senhaerrada\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Exemplo de login com senha errada.\nEspera retorno 401 Unauthorized."
+          },
+          "response": [
+            {
+              "name": "401 - Credenciais inválidas",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 401,\n  \"erro\": \"Não autorizado\",\n  \"mensagem\": \"Credenciais inválidas.\",\n  \"timestamp\": \"2025-11-28T10:00:00\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "👤 Colaboradores",
+      "item": [
+        {
+          "name": "Cadastrar Colaborador",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": \"COL-004\",\n  \"nome\": \"João Pedro Alves\",\n  \"email\": \"joao.alves@empresa.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Cadastra um novo colaborador.\nRequer token JWT válido (qualquer role).\n\nRetorna 201 Created."
+          },
+          "response": [
+            {
+              "name": "201 - Colaborador criado",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 4,\n  \"colaboradorId\": \"COL-004\",\n  \"nome\": \"João Pedro Alves\",\n  \"email\": \"joao.alves@empresa.com\",\n  \"dataCadastro\": \"2025-11-28T10:00:00\"\n}"
+            },
+            {
+              "name": "401 - Sem token",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Listar Todos os Colaboradores",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios"]
+            },
+            "description": "Lista todos os colaboradores.\nRequer token JWT válido."
+          },
+          "response": [
+            {
+              "name": "200 - Lista de colaboradores",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 1,\n    \"colaboradorId\": \"COL-001\",\n    \"nome\": \"Ana Beatriz Silva\",\n    \"email\": \"ana.silva@empresa.com\",\n    \"dataCadastro\": \"2025-11-28T10:00:00\"\n  },\n  {\n    \"id\": 2,\n    \"colaboradorId\": \"COL-002\",\n    \"nome\": \"Carlos Eduardo Lima\",\n    \"email\": \"carlos.lima@empresa.com\",\n    \"dataCadastro\": \"2025-11-28T10:00:00\"\n  },\n  {\n    \"id\": 3,\n    \"colaboradorId\": \"COL-003\",\n    \"nome\": \"Mariana Souza\",\n    \"email\": \"mariana.souza@empresa.com\",\n    \"dataCadastro\": \"2025-11-28T10:00:00\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Buscar Colaborador por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/COL-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "COL-001"]
+            },
+            "description": "Busca colaborador pelo colaboradorId.\nTroque COL-001 pelo ID desejado."
+          },
+          "response": [
+            {
+              "name": "200 - Colaborador encontrado",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"colaboradorId\": \"COL-001\",\n  \"nome\": \"Ana Beatriz Silva\",\n  \"email\": \"ana.silva@empresa.com\",\n  \"dataCadastro\": \"2025-11-28T10:00:00\"\n}"
+            },
+            {
+              "name": "404 - Não encontrado",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 404,\n  \"erro\": \"Recurso Não Encontrado\",\n  \"mensagem\": \"Colaborador com ID 'COL-001' não encontrado.\",\n  \"timestamp\": \"2025-11-28T10:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deletar Colaborador (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/COL-004",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "COL-004"]
+            },
+            "description": "Remove um colaborador e todos os seus hábitos.\n⚠️ Requer ROLE_ADMIN — faça login com mariana.souza@empresa.com antes.\n\nRetorna 204 No Content."
+          },
+          "response": [
+            {
+              "name": "204 - Removido",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "403 - Sem permissão (USER tentando deletar)",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🏃 Hábitos",
+      "item": [
+        {
+          "name": "Registrar Hábito - CORRIDA",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": \"COL-001\",\n  \"tipoAtividade\": \"CORRIDA\",\n  \"descricao\": \"Corrida matinal no parque\",\n  \"minutosDuracao\": 45\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Registra hábito de corrida.\nPontos: 45 × 10 = 450\n\nTipos disponíveis:\nCORRIDA(×10), NATACAO(×10), CICLISMO(×9),\nMUSCULACAO(×8), YOGA(×6), CAMINHADA(×5),\nMEDITACAO(×4), OUTROS(×3)"
+          },
+          "response": [
+            {
+              "name": "201 - Hábito registrado",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"colaboradorId\": \"COL-001\",\n  \"tipoAtividade\": \"CORRIDA\",\n  \"descricaoAtividade\": \"Corrida ou caminhada acelerada\",\n  \"descricao\": \"Corrida matinal no parque\",\n  \"minutosDuracao\": 45,\n  \"pontosGerados\": 450,\n  \"dataRegistro\": \"2025-11-28T10:30:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Registrar Hábito - MUSCULACAO",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": \"COL-002\",\n  \"tipoAtividade\": \"MUSCULACAO\",\n  \"descricao\": \"Treino de força — superiores\",\n  \"minutosDuracao\": 60\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Registra hábito de musculação.\nPontos: 60 × 8 = 480"
+          },
+          "response": [
+            {
+              "name": "201 - Hábito registrado",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 2,\n  \"colaboradorId\": \"COL-002\",\n  \"tipoAtividade\": \"MUSCULACAO\",\n  \"descricaoAtividade\": \"Musculação ou treino de força\",\n  \"descricao\": \"Treino de força — superiores\",\n  \"minutosDuracao\": 60,\n  \"pontosGerados\": 480,\n  \"dataRegistro\": \"2025-11-28T11:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Registrar Hábito - YOGA",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": \"COL-003\",\n  \"tipoAtividade\": \"YOGA\",\n  \"descricao\": \"Aula de yoga online\",\n  \"minutosDuracao\": 50\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Registra hábito de yoga.\nPontos: 50 × 6 = 300"
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar Hábito - ❌ Sem token (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": \"COL-001\",\n  \"tipoAtividade\": \"CORRIDA\",\n  \"descricao\": \"Sem autenticação\",\n  \"minutosDuracao\": 30\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Exemplo sem token JWT.\nEspera retorno 401 Unauthorized."
+          },
+          "response": [
+            {
+              "name": "401 - Sem autenticação",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Registrar Hábito - ❌ Validação (duração inválida)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": \"COL-001\",\n  \"tipoAtividade\": \"CORRIDA\",\n  \"descricao\": \"Muito curto\",\n  \"minutosDuracao\": 5\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Duração abaixo do mínimo (10 min).\nEspera retorno 400 Bad Request."
+          },
+          "response": [
+            {
+              "name": "400 - Duração inválida",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 400,\n  \"erro\": \"Erro de Validação\",\n  \"mensagem\": \"A atividade deve ter no mínimo 10 minutos\",\n  \"timestamp\": \"2025-11-28T10:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar Todos os Hábitos",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos"]
+            },
+            "description": "Lista todos os hábitos registrados.\nRequer token JWT válido."
+          },
+          "response": [
+            {
+              "name": "200 - Lista de hábitos",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 1,\n    \"colaboradorId\": \"COL-001\",\n    \"tipoAtividade\": \"CORRIDA\",\n    \"descricaoAtividade\": \"Corrida ou caminhada acelerada\",\n    \"descricao\": \"Corrida matinal no parque\",\n    \"minutosDuracao\": 45,\n    \"pontosGerados\": 450,\n    \"dataRegistro\": \"2025-11-28T10:30:00\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Buscar Hábito por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos", "1"]
+            },
+            "description": "Busca um hábito pelo ID.\nTroque o '1' pelo ID desejado."
+          },
+          "response": [
+            {
+              "name": "200 - Hábito encontrado",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"colaboradorId\": \"COL-001\",\n  \"tipoAtividade\": \"CORRIDA\",\n  \"descricaoAtividade\": \"Corrida ou caminhada acelerada\",\n  \"descricao\": \"Corrida matinal no parque\",\n  \"minutosDuracao\": 45,\n  \"pontosGerados\": 450,\n  \"dataRegistro\": \"2025-11-28T10:30:00\"\n}"
+            },
+            {
+              "name": "404 - Não encontrado",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 404,\n  \"erro\": \"Recurso Não Encontrado\",\n  \"mensagem\": \"Hábito com ID 1 não encontrado.\",\n  \"timestamp\": \"2025-11-28T10:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Listar Hábitos por Colaborador",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos/colaborador/COL-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos", "colaborador", "COL-001"]
+            },
+            "description": "Lista todos os hábitos de um colaborador.\nTroque COL-001 pelo ID desejado."
+          },
+          "response": [
+            {
+              "name": "200 - Hábitos do colaborador",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 1,\n    \"colaboradorId\": \"COL-001\",\n    \"tipoAtividade\": \"CORRIDA\",\n    \"descricaoAtividade\": \"Corrida ou caminhada acelerada\",\n    \"descricao\": \"Corrida matinal no parque\",\n    \"minutosDuracao\": 45,\n    \"pontosGerados\": 450,\n    \"dataRegistro\": \"2025-11-28T10:30:00\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Hábito",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos", "1"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"colaboradorId\": \"COL-001\",\n  \"tipoAtividade\": \"NATACAO\",\n  \"descricao\": \"Natação na academia\",\n  \"minutosDuracao\": 40\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Atualiza um hábito existente.\nNovos pontos: 40 × 10 = 400\n\nRequer token JWT válido."
+          },
+          "response": [
+            {
+              "name": "200 - Hábito atualizado",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"colaboradorId\": \"COL-001\",\n  \"tipoAtividade\": \"NATACAO\",\n  \"descricaoAtividade\": \"Natação\",\n  \"descricao\": \"Natação na academia\",\n  \"minutosDuracao\": 40,\n  \"pontosGerados\": 400,\n  \"dataRegistro\": \"2025-11-28T10:30:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deletar Hábito (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/habitos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "habitos", "1"]
+            },
+            "description": "Remove um hábito pelo ID.\n⚠️ Requer ROLE_ADMIN — faça login com mariana.souza@empresa.com antes.\n\nRetorna 204 No Content."
+          },
+          "response": [
+            {
+              "name": "204 - Removido com sucesso",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "403 - USER sem permissão para deletar",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
